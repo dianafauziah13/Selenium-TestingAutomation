@@ -1,4 +1,4 @@
-#🧪 Selenium & RestAssured API Automation Testing
+**🧪 Selenium & RestAssured API Automation Testing**
 This repository contains automated testing scripts for RESTful API using RestAssured and optionally Selenium for web UI interaction, as part of a course assignment in Automation Testing.
 📁 Project Structure
 SELENIUM-TESTING/
