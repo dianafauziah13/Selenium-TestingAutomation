@@ -8,9 +8,10 @@ import org.testng.annotations.Test;
 
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
+import selenium.model.ResponseProducts;
 
-public class RestAssuredE2ETest {
-    /*
+public class RestAssuredE2EPOJO {
+      /*
     * Scenario : E2E Testing Add product
     * Test Case - 001: Add data object
         * 1. Hit the endpoint add object with valid data
@@ -52,14 +53,13 @@ public class RestAssuredE2ETest {
         // System.out.println("Token Login: " + tokenLogin);     
     }
 
-    @Test(priority = 1)
+    @Test (priority = 1)
     public void addData(){
         /*
         * Test Case - 001: Add data object
         * 1. Hit the endpoint add object with valid data
         * 2. Hit the endpoint get object data with valid data
         */
-
         String requestBody = "{\n" +
                 "    \"name\": \"Apple MacBook Pro 16 Diana Punya\",\n" +
                 "    \"data\": {\n" +
@@ -74,44 +74,45 @@ public class RestAssuredE2ETest {
                 "}";
 
         // Hit the endpoint add object with valid data
-        Response response = RestAssured.given()
+        Response responseAddData = RestAssured.given()
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + tokenLogin)
                 .body(requestBody)
                 .log().all()
                 .post("/webhook/api/objects");
 
-        System.out.println("Response: " + response.asPrettyString());
-        assert response.getStatusCode() == 200 : "Expected status code 200 but got " + response.getStatusCode();
+        System.out.println("Response: " + responseAddData.asPrettyString());
+        assert responseAddData.getStatusCode() == 200 : "Expected status code 200 but got " + responseAddData.getStatusCode();
 
         // Ambil list ID product yang ditambahkan
-        List<Integer> ids = response.jsonPath().getList("id");
+        List<Integer> ids = responseAddData.jsonPath().getList("id");
         IdProduct = ids.get(0).toString();
         System.out.println("ID Prodcut: " + IdProduct);
 
-        // Hit the endpoint get object data with valid data
+         // Hit the endpoint get object data with valid data
         Response responseGetObject = RestAssured.given()
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + tokenLogin)
                 .log().all()
                 .when()
                 .get("/webhook/8749129e-f5f7-4ae6-9b03-93be7252443c/api/objects/"+ IdProduct );
+
         // Print the response
         System.out.println("Response: " + responseGetObject.asPrettyString());
+        ResponseProducts responseProducts = responseGetObject.as(ResponseProducts.class);
+        // System.out.println("hasil panggil:" + responseProducts);
+        Assert.assertEquals(responseProducts.name, "Apple MacBook Pro 16 Diana Punya");
+        Assert.assertEquals(responseProducts.data.year, "2025");
+        Assert.assertEquals(responseProducts.data.price, 1849.99);
+        Assert.assertEquals(responseProducts.data.cpuModel, "Intel Core i9");
+        Assert.assertEquals(responseProducts.data.hardDiskSize, "1 TB");
+        Assert.assertEquals(responseProducts.data.capacity, "2");
+        Assert.assertEquals(responseProducts.data.screenSize, "14");
+        Assert.assertEquals(responseProducts.data.color, "red");
 
-        // Validate the response
-        // Assert.assertEquals(responseGetObject.getStatusCode(), 200);
-        Assert.assertEquals(responseGetObject.jsonPath().getString("name"),"Apple MacBook Pro 16 Diana Punya");
-        Assert.assertEquals(responseGetObject.jsonPath().getString("data.year"),"2025");
-        Assert.assertEquals(responseGetObject.jsonPath().getString("data.price"),"1849.99");
-        Assert.assertEquals(responseGetObject.jsonPath().getString("data.cpu_model"),"Intel Core i9");
-        Assert.assertEquals(responseGetObject.jsonPath().getString("data.hard_disk_size"),"1 TB");
-        Assert.assertEquals(responseGetObject.jsonPath().getString("data.capacity"),"2");
-        Assert.assertEquals(responseGetObject.jsonPath().getString("data.screen_size"),"14");
-        Assert.assertEquals(responseGetObject.jsonPath().getString("data.color"),"red");
     }
 
-    @Test(priority = 2)
+ @Test(priority = 2)
     public void updateData(){
     /*
         * Test Case - 002: Update data object     
@@ -156,18 +157,28 @@ public class RestAssuredE2ETest {
         System.out.println("Response: " + responseGetUpdatedObject.asPrettyString());
 
         // Validate the response
-        // Assert.assertEquals(responseGetObject.getStatusCode(), 200);
-        Assert.assertEquals(responseGetUpdatedObject.jsonPath().getString("name"),"Apple MacBook Pro 16 Diana Punya Updated");
-        Assert.assertEquals(responseGetUpdatedObject.jsonPath().getString("data.year"),"2027");
-        Assert.assertEquals(responseGetUpdatedObject.jsonPath().getString("data.price"),"9384765");
-        Assert.assertEquals(responseGetUpdatedObject.jsonPath().getString("data.cpu_model"),"Intel Core i9 plus");
-        Assert.assertEquals(responseGetUpdatedObject.jsonPath().getString("data.hard_disk_size"),"3 TB");
-        Assert.assertEquals(responseGetUpdatedObject.jsonPath().getString("data.capacity"),"5");
-        Assert.assertEquals(responseGetUpdatedObject.jsonPath().getString("data.screen_size"),"15");
-        Assert.assertEquals(responseGetUpdatedObject.jsonPath().getString("data.color"),"blue");
+       Response responseGetObject = RestAssured.given()
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + tokenLogin)
+                .log().all()
+                .when()
+                .get("/webhook/8749129e-f5f7-4ae6-9b03-93be7252443c/api/objects/"+ IdProduct );
+
+        // Print the response
+        System.out.println("Response: " + responseGetObject.asPrettyString());
+        ResponseProducts responseProducts = responseGetObject.as(ResponseProducts.class);
+        // System.out.println("hasil panggil:" + responseProducts);
+        Assert.assertEquals(responseProducts.name, "Apple MacBook Pro 16 Diana Punya Updated");
+        Assert.assertEquals(responseProducts.data.year, "2027");
+        Assert.assertEquals(responseProducts.data.price, 9384765);
+        Assert.assertEquals(responseProducts.data.cpuModel, "Intel Core i9 plus");
+        Assert.assertEquals(responseProducts.data.hardDiskSize, "3 TB");
+        Assert.assertEquals(responseProducts.data.capacity, "5");
+        Assert.assertEquals(responseProducts.data.screenSize, "15");
+        Assert.assertEquals(responseProducts.data.color, "blue");
     }
 
-    @Test(priority = 3)
+@Test(priority = 3)
     public void deleteData(){
     /*
     * Test Case - 003: Delete data object     
@@ -201,9 +212,12 @@ public class RestAssuredE2ETest {
         System.out.println("Response: " + responseGetsObject.asPrettyString());
                 Assert.assertEquals(responseGetsObject.getStatusCode(), 200,
                 "Expected status code 200 but got " + responseGetsObject.getStatusCode());
-        Assert.assertNull(responseGetsObject.jsonPath().get("name"),
-                "Expected name null but got " + responseGetsObject.jsonPath().get("name"));
 
+        ResponseProducts responseProducts = responseGetsObject.as(ResponseProducts.class);
+        // System.out.println("hasil panggil:" + responseProducts);
+        Assert.assertNull(responseProducts.name);
     }
+
+
 
 }
